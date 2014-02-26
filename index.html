@@ -1,0 +1,206 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <link rel="stylesheet" type="text/css" href="main.css">
+  <title>Test</title>
+<style type="text/css">
+<!--
+.reset {
+	text-decoration: none;
+	color: #000;
+}
+.ui-helper-hidden-accessible { 
+	display:none;
+}
+-->
+</style>
+</head>
+
+<body>
+  <div class="main-container">
+    <div id="content">
+      <div class="panel">
+        <div class="panel-heading">TABLE HEADING</div>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Type</th>
+              <th>Manager</th>
+              <th>Phone</th>
+            </tr>
+          </thead>
+          <tbody id="test_tbody">
+            <tr class="filter first">
+              <td>
+                <input id="f_name" type="text" value="" name="f_name" class="filter" tabindex=1 title="Search by name"/>&nbsp;
+                <a id="reset" class="reset" href="#" title="Clear filters">reset</a>
+                <img id="wait" style="display:none;" src="wait.gif" height="16" width="16"/>
+              </td>
+              <td>
+                <select id="f_type" name="f_type" class="filter filter_list" tabindex=2>
+                  <option value="all" selected>All</option>
+                </select>
+              </td>
+              <td>
+                <select id="f_manager" name="f_manager" class="filter filter_list" tabindex=2>
+                  <option value="all" selected>All</option>
+                </select>
+              </td>
+              <td>&nbsp;</td>
+            </tr>
+            <tr class="test_tr row_color1">
+              <td><a href="google.com" target="_blank">google</a></td>
+              <td>Search</td>
+              <td>Bob</td>
+              <td>999-555-3333</td>
+            </tr>
+            <tr class="test_tr row_color2">
+              <td><a href="yahoo.com" target="_blank">Yahoo</a></td>
+              <td>Email</td>
+              <td>Chris</td>
+              <td>321-321-4321</td>
+            </tr>
+            <tr class="test_tr row_color1">
+              <td><a href="blogs.com" target="_blank">My Blog</a></td>
+              <td>Blogs</td>
+              <td>Chris</td>
+              <td>321-321-4321</td>
+            </tr>
+            <tr class="test_tr row_color2">
+              <td><a href="misc.com" target="_blank">Miscellaneous</a></td>
+              <td>Misc</td>
+              <td>Mary</td>
+              <td>N/A</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  
+  <script src="jquery.min.js"></script>
+  <script src="jquery.ui.autocomplete.min.js"></script>
+  <script type="text/javascript">
+  function build_select(hash_obj, selected) {
+    var html = '<option value="all">All</option>';
+    var keys = [];
+    for (var i in hash_obj) {
+      keys.push(i);
+    }
+    keys.sort();
+    for (var i in keys) {
+      var key = keys[i];
+      if (hash_obj[key] != undefined) {
+        var is_selected = (key == selected) ? ' selected' : '';
+        html += '<option value="' + key + '"' + is_selected + '>' + key + ' (' + hash_obj[key] + ')</option>'; 
+      }
+    }
+    return html;
+  }
+  function rebuild_selects() {
+	var types = new Object;
+    var managers = new Object;
+
+    $("tr.test_tr:visible").each(function() {
+      var type = $(this).find("td:nth-child(2)").text();
+      var manager = $(this).find("td:nth-child(3)").text();
+      types[type] = ((types[type]==undefined) ? 0 : types[type]) + 1;
+      managers[manager] = ((managers[manager]==undefined) ? 0 : managers[manager]) + 1;
+    });
+    if ($("#f_type").attr('last_changed') != 1) {
+      $("#f_type").html( build_select(types, $("#f_type").val()) );
+    }
+    if ($("#f_manager").attr('last_changed') != 1) {
+      $("#f_manager").html( build_select(managers, $("#f_manager").val()) );
+    }
+  }
+  
+  function get_names() {
+	var names = [];
+	$("tr.test_tr").find("td:first-child").each(function() {
+      names.push($.trim($(this).text()));
+	});
+    return names;
+  }
+  function color_rows() {
+    $("tr.test_tr").removeClass("row_color1 row_color2");
+    $("tr.test_tr:visible:even").addClass("row_color2");
+    $("tr.test_tr:visible:odd").addClass("row_color1");
+  }
+  function filter_table() {
+	var search_name = $("#f_name").val().toLowerCase();
+	var search_type = $("#f_type").val();
+	var search_manager = $("#f_manager").val();
+	$("#reset").hide();
+	$("#wait").show();
+	$("tr.test_tr").each(function() {
+      var name_match = (search_name.length>0) ? (($(this).find("td:first").text().toLowerCase().indexOf(search_name) != -1) ? 1 : 0) : 1;
+      var type_match = (search_type=="all") ? 1 : (($(this).find("td:nth-child(2)").text() == search_type) ? 1 : 0 );
+      var manager_match = (search_manager=="all") ? 1 : (($(this).find("td:nth-child(3)").text() == search_manager) ? 1 : 0 );
+      if (name_match && manager_match && type_match) {
+        $(this).show();
+      } else {
+        $(this).hide();
+      }
+    });
+    color_rows();
+    rebuild_selects();
+    $("#wait").hide();
+    $("#reset").show();
+  }
+
+  var timer = null;
+  $("#f_name").val('');
+  $(function() {
+    $("#f_name").autocomplete({
+      minLength: 1,
+      source: get_names(),
+      select: function(event, ui) {
+        $("#f_name").val(ui.item.value);
+        clearTimeout(timer);
+        timer = setTimeout(filter_table, 200);
+      },
+      messages: {
+        noResults: '',
+        results: function() {}
+      }
+    })
+    .data("ui-autocomplete")._renderItem = function(ul, item) {
+      return $(ul).hide();
+      //return $("<li>").append("<a>"+item+"</a>").appendTo(ul);
+    };
+  });
+
+  $("#f_name").keyup(function(event) {
+    clearTimeout(timer);
+    $(".filter_list").attr("last_changed", 0);
+    if (event.which != 13) {
+      timer = setTimeout(filter_table, 300);
+    }
+  });
+  $("#f_type").change(function(event) {
+	clearTimeout(timer);
+	$(".filter_list").attr("last_changed", 0);
+	$(this).attr("last_changed", 1);
+	timer = setTimeout(filter_table, 200);
+  });
+  $("#f_manager").change(function(event) {
+	clearTimeout(timer);
+	$(".filter_list").attr("last_changed", 0);
+	$(this).attr("last_changed", 1);
+	timer = setTimeout(filter_table, 200);
+  });
+  $("#reset").click(function() {
+    $(".filter_list").attr("last_changed", 0);
+    $("#f_name").val("");
+    $("#f_type option:first-child").attr("selected", "selected");
+    $("#f_manager option:first-child").attr("selected", "selected");
+    filter_table();
+  });
+  filter_table();
+  </script>
+
+</body>
+</html>
