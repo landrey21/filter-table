@@ -100,7 +100,7 @@
     return html;
   }
   function rebuild_selects() {
-	var types = new Object;
+    var types = new Object;
     var managers = new Object;
 
     $("tr.test_tr:visible").each(function() {
@@ -118,10 +118,10 @@
   }
   
   function get_names() {
-	var names = [];
-	$("tr.test_tr").find("td:first-child").each(function() {
+    var names = [];
+    $("tr.test_tr").find("td:first-child").each(function() {
       names.push($.trim($(this).text()));
-	});
+    });
     return names;
   }
   function color_rows() {
@@ -130,12 +130,12 @@
     $("tr.test_tr:visible:odd").addClass("row_color1");
   }
   function filter_table() {
-	var search_name = $("#f_name").val().toLowerCase();
-	var search_type = $("#f_type").val();
-	var search_manager = $("#f_manager").val();
-	$("#reset").hide();
-	$("#wait").show();
-	$("tr.test_tr").each(function() {
+    var search_name = $("#f_name").val().toLowerCase();
+    var search_type = $("#f_type").val();
+    var search_manager = $("#f_manager").val();
+    $("#reset").hide();
+    $("#wait").show();
+    $("tr.test_tr").each(function() {
       var name_match = (search_name.length>0) ? (($(this).find("td:first").text().toLowerCase().indexOf(search_name) != -1) ? 1 : 0) : 1;
       var type_match = (search_type=="all") ? 1 : (($(this).find("td:nth-child(2)").text() == search_type) ? 1 : 0 );
       var manager_match = (search_manager=="all") ? 1 : (($(this).find("td:nth-child(3)").text() == search_manager) ? 1 : 0 );
@@ -181,16 +181,16 @@
     }
   });
   $("#f_type").change(function(event) {
-	clearTimeout(timer);
-	$(".filter_list").attr("last_changed", 0);
-	$(this).attr("last_changed", 1);
-	timer = setTimeout(filter_table, 200);
+    clearTimeout(timer);
+    $(".filter_list").attr("last_changed", 0);
+    $(this).attr("last_changed", 1);
+    timer = setTimeout(filter_table, 200);
   });
   $("#f_manager").change(function(event) {
-	clearTimeout(timer);
-	$(".filter_list").attr("last_changed", 0);
-	$(this).attr("last_changed", 1);
-	timer = setTimeout(filter_table, 200);
+    clearTimeout(timer);
+    $(".filter_list").attr("last_changed", 0);
+    $(this).attr("last_changed", 1);
+    timer = setTimeout(filter_table, 200);
   });
   $("#reset").click(function() {
     $(".filter_list").attr("last_changed", 0);
